@@ -1,6 +1,8 @@
 import React from "react";
 import { format } from "date-fns";
 import { Building2 } from "lucide-react";
+import logoImg from "@/images/logo.png";
+import stampImg from "@/images/stamp.png";
 
 export default function DocumentTemplate({ doc }) {
   const sym = { AED: "AED ", USD: "$", EUR: "€", GBP: "£", ZAR: "R", NGN: "₦", KES: "KSh", INR: "₹" }[doc.currency] || doc.currency + " ";
@@ -26,17 +28,11 @@ export default function DocumentTemplate({ doc }) {
       {/* Header bar */}
       <div style={{ backgroundColor: accentColor }} className="h-2" />
 
-      <div className="p-8 md:p-10">
+      <div className="p-6 md:p-8">
         {/* Top section */}
-        <div className="flex flex-col md:flex-row justify-between gap-6 mb-10">
-          <div className="flex items-start gap-4">
-            {doc.company_logo_url ? (
-              <img src={doc.company_logo_url} alt="Logo" className="w-16 h-16 object-contain rounded-xl" />
-            ) : (
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: accentColor + "15" }}>
-                <Building2 className="w-7 h-7" style={{ color: accentColor }} />
-              </div>
-            )}
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <div className="flex items-start gap-3">
+            <img src={logoImg} alt="Logo" className="w-14 h-14 object-contain rounded-xl" />
             <div>
               <h2 className="text-xl font-bold text-slate-900">{doc.company_name || "Blockcube"}</h2>
               {doc.company_address && <p className="text-xs text-slate-500 mt-0.5">{doc.company_address}</p>}
@@ -52,7 +48,7 @@ export default function DocumentTemplate({ doc }) {
         </div>
 
         {/* Client and dates */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Bill To</p>
             <p className="font-semibold text-slate-900">{doc.client_name || "—"}</p>
@@ -80,7 +76,7 @@ export default function DocumentTemplate({ doc }) {
         </div>
 
         {/* Items table */}
-        <div className="border border-slate-200 rounded-lg overflow-hidden mb-8">
+        <div className="border border-slate-200 rounded-lg overflow-hidden mb-6">
           <table className="w-full text-sm">
             <thead>
               <tr style={{ backgroundColor: accentColor + "08" }}>
@@ -113,7 +109,7 @@ export default function DocumentTemplate({ doc }) {
         </div>
 
         {/* Totals */}
-        <div className="flex justify-end mb-8">
+        <div className="flex justify-end mb-6">
           <div className="w-64 space-y-2">
             <div className="flex justify-between text-sm text-slate-600">
               <span>Subtotal</span><span>{sym}{subtotal.toFixed(2)}</span>
@@ -132,9 +128,9 @@ export default function DocumentTemplate({ doc }) {
           </div>
         </div>
 
-        {/* Notes, details, and stamp/signature */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-          <div className="space-y-4">
+        {/* Notes & Payment Terms — side by side */}
+        {(doc.notes || doc.payment_terms) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
             {doc.notes && (
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Notes</p>
@@ -147,20 +143,22 @@ export default function DocumentTemplate({ doc }) {
                 <p className="text-slate-600 whitespace-pre-wrap">{doc.payment_terms}</p>
               </div>
             )}
-            {doc.bank_details && (
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Bank Details</p>
-                <p className="text-slate-600 whitespace-pre-wrap">{doc.bank_details}</p>
-              </div>
-            )}
           </div>
+        )}
+
+        {/* Bank Details & Stamp — side by side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          {doc.bank_details && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Bank Details</p>
+              <p className="text-slate-600 whitespace-pre-wrap text-xs leading-relaxed">{doc.bank_details}</p>
+            </div>
+          )}
 
           {/* Stamp & Signature — right column */}
           <div className="flex flex-col items-end justify-end">
             <div className="text-center">
-              {doc.stamp_url && <img src={doc.stamp_url} alt="Stamp" className="w-28 h-28 object-contain mx-auto mb-2" />}
-              {doc.signature_url && <img src={doc.signature_url} alt="Signature" className="w-48 h-16 object-contain mx-auto mb-1" />}
-              {!doc.signature_url && <div className="w-48 border-b border-slate-300 mb-1"></div>}
+              <img src={stampImg} alt="Stamp" className="w-24 h-24 object-contain mx-auto mb-1" />
               <p className="text-xs text-slate-400">Authorized Signature</p>
             </div>
           </div>

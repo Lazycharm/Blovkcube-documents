@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { getDocument, createDocument, updateDocument } from "@/services/documents";
 import { listClients, createClient } from "@/services/clients";
 import { getNextDocumentNumber } from "@/services/documents";
-import { uploadFile } from "@/services/storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, Printer, Download, Upload } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download } from "lucide-react";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -55,13 +54,13 @@ export default function CreateDocument() {
     items: [{ description: "", quantity: 1, unit_price: 0, discount: 0, tax_percent: 0, total: 0 }],
     notes: "",
     payment_terms: "",
-    bank_details: "",
+    bank_details: "Emirates Islamic Bank\nBlovk Cube Techical Services Est\nACCOUNT NUMBER 3708487685601AED\nIBAN AE250340003708487685601\n\nMashreq Bank\nBlovk Cube Techical Services Est\nACCOUNT NUMBER 019101565155\nIBAN AE080330000019101565155",
     company_name: "Blovk Cube Ts Est",
     company_address: "Khaled building Hor Al Anz Office F1-457 | TRN 104745825000003",
     company_phone: "+97156592122,+971543873531",
     company_email: "blovkcubetsest@gmail.com",
     company_website: "https://blovkcube.com/",
-    company_logo_url: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b15319d48f2711d4d14365/e700388e1_cropped-logo-1.png",
+    company_logo_url: "",
   });
 
   useEffect(() => {
@@ -320,55 +319,6 @@ export default function CreateDocument() {
 
               {/* Totals */}
               <TotalsSection items={doc.items} currency={doc.currency} />
-
-              {/* Stamp & Signature */}
-              <Card className="border-slate-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Stamp & Signature</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label className="text-xs text-slate-500 mb-2 block">Company Stamp</Label>
-                      <div className="flex items-center gap-4">
-                        {doc.stamp_url ? (
-                          <img src={doc.stamp_url} alt="Stamp" className="w-24 h-24 object-contain rounded-lg border border-slate-200" />
-                        ) : (
-                          <div className="w-24 h-24 bg-slate-50 rounded-lg flex items-center justify-center border border-dashed border-slate-300 text-slate-400 text-xs">No stamp</div>
-                        )}
-                        <label>
-                          <Button type="button" variant="outline" size="sm" className="text-xs" asChild>
-                            <span>
-                              <Upload className="w-3 h-3 mr-1.5" /> Upload Stamp
-                              <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files[0]; if (!file) return; try { const url = await uploadFile(file); updateDoc({ stamp_url: url }); } catch (err) { console.error('Stamp upload failed:', err); } }} />
-                            </span>
-                          </Button>
-                        </label>
-                        {doc.stamp_url && <Button type="button" variant="ghost" size="sm" className="text-xs text-red-500" onClick={() => updateDoc({ stamp_url: "" })}>Remove</Button>}
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-slate-500 mb-2 block">Signature</Label>
-                      <div className="flex items-center gap-4">
-                        {doc.signature_url ? (
-                          <img src={doc.signature_url} alt="Signature" className="h-16 object-contain rounded-lg border border-slate-200" />
-                        ) : (
-                          <div className="w-48 h-16 bg-slate-50 rounded-lg flex items-center justify-center border border-dashed border-slate-300 text-slate-400 text-xs">No signature</div>
-                        )}
-                        <label>
-                          <Button type="button" variant="outline" size="sm" className="text-xs" asChild>
-                            <span>
-                              <Upload className="w-3 h-3 mr-1.5" /> Upload Signature
-                              <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files[0]; if (!file) return; try { const url = await uploadFile(file); updateDoc({ signature_url: url }); } catch (err) { console.error('Signature upload failed:', err); } }} />
-                            </span>
-                          </Button>
-                        </label>
-                        {doc.signature_url && <Button type="button" variant="ghost" size="sm" className="text-xs text-red-500" onClick={() => updateDoc({ signature_url: "" })}>Remove</Button>}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Notes */}
               <Card className="border-slate-200 shadow-sm">
