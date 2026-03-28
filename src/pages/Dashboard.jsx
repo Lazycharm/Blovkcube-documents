@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const typeConfig = {
-  invoice: { label: "Invoice", color: "bg-blue-100 text-blue-700", accent: "bg-blue-600", lightBg: "bg-blue-50", icon: FileText },
+  invoice: { label: "Tax Invoice", color: "bg-blue-100 text-blue-700", accent: "bg-blue-600", lightBg: "bg-blue-50", icon: FileText },
   quotation: { label: "Quote", color: "bg-violet-100 text-violet-700", accent: "bg-violet-600", lightBg: "bg-violet-50", icon: ClipboardList },
   receipt: { label: "Receipt", color: "bg-emerald-100 text-emerald-700", accent: "bg-emerald-600", lightBg: "bg-emerald-50", icon: Receipt },
 };
@@ -121,7 +121,7 @@ export default function Dashboard() {
                 <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b15319d48f2711d4d14365/e700388e1_cropped-logo-1.png" alt="Blockcube" className="w-10 h-10 object-contain rounded-xl" />
                 <h1 className="text-2xl font-bold text-slate-900">Blockcube</h1>
               </div>
-              <p className="text-slate-500 text-sm ml-[52px]">Invoice, Quotation, Receipt & Warranty Builder</p>
+              <p className="text-slate-500 text-sm ml-[52px]">Tax Invoice, Quotation, Receipt & Warranty Builder</p>
             </div>
             <div className="flex items-center gap-2">
               <Link to={createPageUrl("WarrantyHistory")}>
@@ -145,7 +145,7 @@ export default function Dashboard() {
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Create New</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { type: "invoice", title: "Invoice", desc: "Bill your clients", icon: FileText, gradient: "from-blue-500 to-blue-700" },
+              { type: "invoice", title: "Tax Invoice", desc: "Bill your clients", icon: FileText, gradient: "from-blue-500 to-blue-700" },
               { type: "quotation", title: "Quotation", desc: "Send a quote", icon: ClipboardList, gradient: "from-violet-500 to-violet-700" },
               { type: "receipt", title: "Receipt", desc: "Confirm payment", icon: Receipt, gradient: "from-emerald-500 to-emerald-700" },
             ].map((item) => (
@@ -212,7 +212,7 @@ export default function Dashboard() {
         {/* Document type breakdown */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { label: "Invoices", count: invoices.length, total: invoices.reduce((s, d) => s + (d.grand_total || 0), 0), icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Tax Invoices", count: invoices.length, total: invoices.reduce((s, d) => s + (d.grand_total || 0), 0), icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
             { label: "Quotations", count: quotations.length, total: quotations.reduce((s, d) => s + (d.grand_total || 0), 0), icon: ClipboardList, color: "text-violet-600", bg: "bg-violet-50" },
             { label: "Receipts", count: receipts.length, total: receipts.reduce((s, d) => s + (d.grand_total || 0), 0), icon: Receipt, color: "text-emerald-600", bg: "bg-emerald-50" },
           ].map((item) => (
@@ -304,7 +304,7 @@ export default function Dashboard() {
             <Card className="p-12 text-center border-slate-200 border-dashed">
               <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
               <p className="text-slate-500 mb-1">No documents yet</p>
-              <p className="text-xs text-slate-400">Create your first invoice, quotation, or receipt above</p>
+              <p className="text-xs text-slate-400">Create your first tax invoice, quotation, or receipt above</p>
             </Card>
           ) : (
             <div className="space-y-2">

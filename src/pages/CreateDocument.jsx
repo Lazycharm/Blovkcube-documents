@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Printer, Download } from "lucide-react";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
+import { exportHtmlToPdf } from "@/utils/pdfExport";
 import { Link } from "react-router-dom";
 
 import ItemTable from "@/components/document/ItemTable";
@@ -25,6 +26,30 @@ const CURRENCIES = ["AED", "USD", "EUR", "GBP", "ZAR", "NGN", "KES", "INR"];
 function generateNumber(type) {
   const prefix = { invoice: "INV", quotation: "QUO", receipt: "REC" }[type] || "DOC";
   return `${prefix}-00001`;
+}
+
+function recalcLineTotal(item) {
+  const base = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
+  const tax = base * ((Number(item.tax_percent) || 0) / 100);
+  return Math.max(0, base + tax);
+}
+
+/** Normalize line items (images + totals; discount no longer used) */
+function normalizeDocumentItems(doc) {
+  if (!doc?.items || !Array.isArray(doc.items)) return doc;
+  return {
+    ...doc,
+    items: doc.items.map((item) => {
+      const next = {
+        ...item,
+        image_url: item.image_url ?? "",
+        image_url_2: item.image_url_2 ?? "",
+        image_url_3: item.image_url_3 ?? "",
+      };
+      next.total = recalcLineTotal(next);
+      return next;
+    }),
+  };
 }
 
 export default function CreateDocument() {
@@ -51,7 +76,7 @@ export default function CreateDocument() {
     client_phone: "",
     client_email: "",
     client_trn: "",
-    items: [{ description: "", quantity: 1, unit_price: 0, discount: 0, tax_percent: 0, total: 0 }],
+    items: [{ description: "", image_url: "", image_url_2: "", image_url_3: "", quantity: 1, unit_price: 0, tax_percent: 0, total: 0 }],
     notes: "",
     payment_terms: "",
     bank_details: "Emirates Islamic Bank\nBlovk Cube Techical Services Est\nACCOUNT NUMBER 3708487685601AED\nIBAN AE250340003708487685601\n\nMashreq Bank\nBlovk Cube Techical Services Est\nACCOUNT NUMBER 019101565155\nIBAN AE080330000019101565155",
@@ -75,11 +100,11 @@ export default function CreateDocument() {
             loaded.issue_date = format(new Date(), "yyyy-MM-dd");
             getNextDocumentNumber(loaded.type).then((num) => {
               loaded.document_number = num;
-              setDoc(loaded);
+              setDoc(normalizeDocumentItems(loaded));
             });
             return;
           }
-          setDoc(loaded);
+          setDoc(normalizeDocumentItems(loaded));
         }
       }).catch(() => {});
     } else {
@@ -94,12 +119,12 @@ export default function CreateDocument() {
   const calcTotals = () => {
     const items = doc.items || [];
     const subtotal = items.reduce((s, i) => s + (i.quantity || 0) * (i.unit_price || 0), 0);
-    const total_discount = items.reduce((s, i) => s + (i.discount || 0), 0);
+    const total_discount = 0;
     const total_tax = items.reduce((s, i) => {
-      const base = (i.quantity || 0) * (i.unit_price || 0) - (i.discount || 0);
+      const base = (i.quantity || 0) * (i.unit_price || 0);
       return s + base * ((i.tax_percent || 0) / 100);
     }, 0);
-    return { subtotal, total_discount, total_tax, grand_total: subtotal - total_discount + total_tax };
+    return { subtotal, total_discount, total_tax, grand_total: subtotal + total_tax };
   };
 
   const handleSave = async () => {
@@ -153,23 +178,18 @@ export default function CreateDocument() {
     window.print();
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const element = document.getElementById("document-preview");
     if (!element) return;
-    const opt = {
-      margin: 0,
-      filename: `${doc.document_number}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-    import("html2pdf.js").then((m) => {
-      const html2pdf = m.default;
-      html2pdf().set(opt).from(element).save();
-    });
+    try {
+      await exportHtmlToPdf(element, `${doc.document_number}.pdf`);
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      alert("Failed to export PDF. Try again or use Print → Save as PDF.");
+    }
   };
 
-  const typeLabel = { invoice: "Invoice", quotation: "Quotation", receipt: "Receipt" }[doc.type];
+  const typeLabel = { invoice: "Tax Invoice", quotation: "Quotation", receipt: "Receipt" }[doc.type];
   const typeColor = { invoice: "text-blue-600", quotation: "text-violet-600", receipt: "text-emerald-600" }[doc.type];
 
   return (
@@ -312,8 +332,32 @@ export default function CreateDocument() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Items</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ItemTable items={doc.items} onChange={(items) => updateDoc({ items })} currency={doc.currency} />
+                <CardContent className="space-y-4">
+                  {doc.type === "invoice" && (
+                    <div>
+                      <Label className="text-xs text-slate-500">Note (beside totals)</Label>
+                      <Input
+                        value={doc.notes || ""}
+                        onChange={(e) => updateDoc({ notes: e.target.value })}
+                        placeholder="Short note shown to the left of subtotal / total..."
+                        className="mt-1 border-slate-200"
+                      />
+                    </div>
+                  )}
+                  <ItemTable
+                    items={doc.items}
+                    onChange={(itemsOrUpdater) => {
+                      setDoc((prev) => ({
+                        ...prev,
+                        items:
+                          typeof itemsOrUpdater === "function"
+                            ? itemsOrUpdater(prev.items || [])
+                            : itemsOrUpdater,
+                      }));
+                    }}
+                    currency={doc.currency}
+                    docType={doc.type}
+                  />
                 </CardContent>
               </Card>
 
@@ -327,10 +371,12 @@ export default function CreateDocument() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label className="text-xs text-slate-500">Notes</Label>
-                      <Textarea value={doc.notes || ""} onChange={(e) => updateDoc({ notes: e.target.value })} placeholder="Thank you for your business..." rows={4} className="mt-1 border-slate-200" />
-                    </div>
+                    {doc.type !== "invoice" && (
+                      <div>
+                        <Label className="text-xs text-slate-500">Notes</Label>
+                        <Textarea value={doc.notes || ""} onChange={(e) => updateDoc({ notes: e.target.value })} placeholder="Thank you for your business..." rows={4} className="mt-1 border-slate-200" />
+                      </div>
+                    )}
                     <div>
                       <Label className="text-xs text-slate-500">Payment Terms</Label>
                       <Textarea value={doc.payment_terms || ""} onChange={(e) => updateDoc({ payment_terms: e.target.value })} placeholder="Net 30 days..." rows={4} className="mt-1 border-slate-200" />
@@ -342,6 +388,7 @@ export default function CreateDocument() {
                   </div>
                 </CardContent>
               </Card>
+
         </div>
 
         {/* Live Preview — always visible */}

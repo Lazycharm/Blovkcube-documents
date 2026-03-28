@@ -4,13 +4,11 @@ export default function TotalsSection({ items, currency = "AED" }) {
   const sym = { AED: "AED ", USD: "$", EUR: "€", GBP: "£", ZAR: "R", NGN: "₦", KES: "KSh", INR: "₹" }[currency] || currency + " ";
 
   const subtotal = items.reduce((s, i) => s + (i.quantity || 0) * (i.unit_price || 0), 0);
-  const totalDiscount = items.reduce((s, i) => s + (i.discount || 0), 0);
-  const taxableTotal = subtotal - totalDiscount;
   const totalTax = items.reduce((s, i) => {
-    const base = (i.quantity || 0) * (i.unit_price || 0) - (i.discount || 0);
+    const base = (i.quantity || 0) * (i.unit_price || 0);
     return s + base * ((i.tax_percent || 0) / 100);
   }, 0);
-  const grandTotal = taxableTotal + totalTax;
+  const grandTotal = subtotal + totalTax;
 
   return (
     <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
@@ -19,12 +17,6 @@ export default function TotalsSection({ items, currency = "AED" }) {
           <span>Subtotal</span>
           <span>{sym}{subtotal.toFixed(2)}</span>
         </div>
-        {totalDiscount > 0 && (
-          <div className="flex justify-between text-sm text-red-500">
-            <span>Discount</span>
-            <span>-{sym}{totalDiscount.toFixed(2)}</span>
-          </div>
-        )}
         <div className="flex justify-between text-sm text-slate-600">
           <span>Tax</span>
           <span>{sym}{totalTax.toFixed(2)}</span>

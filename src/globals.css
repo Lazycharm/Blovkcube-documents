@@ -38,16 +38,35 @@
 }
 
 @media print {
+  /* Smaller margins = more room so footer fits on page 1 */
   @page {
-    margin: 0.5in;
+    margin: 0.35in;
   }
   body {
     background: white !important;
+  }
+
+  #document-preview {
+    font-size: 11px;
+    line-height: 1.35;
   }
   .print\:hidden {
     display: none !important;
   }
   .print\:block {
     display: block !important;
+  }
+
+  /* Keep bank details + stamp + signature on one page when possible */
+  #document-preview .document-print-footer,
+  #document-preview .document-signature-cluster {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Don’t split a table row across pages */
+  #document-preview tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

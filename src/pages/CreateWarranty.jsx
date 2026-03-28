@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Eye, Save, Printer, Download, ShieldCheck, Upload } from "lucide-react";
 import { format, addMonths, addYears } from "date-fns";
 import { createPageUrl } from "@/utils";
+import { exportHtmlToPdf } from "@/utils/pdfExport";
 import { Link } from "react-router-dom";
 
 import ClientSelector from "@/components/document/ClientSelector";
@@ -159,19 +160,15 @@ export default function CreateWarranty() {
 
   const handleExportPDF = () => {
     setActiveTab("preview");
-    setTimeout(() => {
+    setTimeout(async () => {
       const element = document.getElementById("warranty-preview");
-      const opt = {
-        margin: 0,
-        filename: `${warranty.certificate_number}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-      import("html2pdf.js").then((m) => {
-        const html2pdf = m.default;
-        html2pdf().set(opt).from(element).save();
-      });
+      if (!element) return;
+      try {
+        await exportHtmlToPdf(element, `${warranty.certificate_number}.pdf`);
+      } catch (err) {
+        console.error("PDF export failed:", err);
+        alert("Failed to export PDF. Try again or use Print → Save as PDF.");
+      }
     }, 400);
   };
 

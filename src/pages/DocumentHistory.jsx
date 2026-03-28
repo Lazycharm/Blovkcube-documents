@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 const typeConfig = {
-  invoice: { label: "Invoice", color: "bg-blue-100 text-blue-700", icon: FileText },
+  invoice: { label: "Tax Invoice", color: "bg-blue-100 text-blue-700", icon: FileText },
   quotation: { label: "Quote", color: "bg-violet-100 text-violet-700", icon: ClipboardList },
   receipt: { label: "Receipt", color: "bg-emerald-100 text-emerald-700", icon: Receipt },
 };
@@ -98,7 +98,7 @@ export default function DocumentHistory() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="invoice">Invoices</SelectItem>
+                <SelectItem value="invoice">Tax Invoices</SelectItem>
                 <SelectItem value="quotation">Quotations</SelectItem>
                 <SelectItem value="receipt">Receipts</SelectItem>
               </SelectContent>
