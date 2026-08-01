@@ -10,11 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useAuth } from "@/lib/AuthContext";
 import { format, differenceInDays, startOfDay } from "date-fns";
 import {
   FileText, ClipboardList, Receipt, Plus, ArrowRight,
   TrendingUp, Clock, CheckCircle2, Building2, ShieldCheck,
-  Users, Pencil, Trash2, X, AlertTriangle
+  Users, Pencil, Trash2, X, AlertTriangle, Settings, LogOut
 } from "lucide-react";
 
 const typeConfig = {
@@ -26,6 +27,7 @@ const typeConfig = {
 const emptyClient = { name: "", company: "", address: "", phone: "", email: "", trn: "" };
 
 export default function Dashboard() {
+  const { company, logout } = useAuth();
   const queryClient = useQueryClient();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
@@ -118,8 +120,14 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b15319d48f2711d4d14365/e700388e1_cropped-logo-1.png" alt="Blockcube" className="w-10 h-10 object-contain rounded-xl" />
-                <h1 className="text-2xl font-bold text-slate-900">Blockcube</h1>
+                {company?.logo_url ? (
+                  <img src={company.logo_url} alt={company.name} className="w-10 h-10 object-contain rounded-xl" />
+                ) : (
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                    <Building2 className="w-5 h-5 text-blue-300" />
+                  </div>
+                )}
+                <h1 className="text-2xl font-bold text-slate-900">{company?.name || "Your Company"}</h1>
               </div>
               <p className="text-slate-500 text-sm ml-[52px]">Tax Invoice, Quotation, Receipt & Warranty Builder</p>
             </div>
@@ -134,6 +142,14 @@ export default function Dashboard() {
                   Documents <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </Link>
+              <Link to={createPageUrl("CompanySettings")}>
+                <Button variant="outline" size="icon" className="text-sm" title="Company Settings">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Button variant="outline" size="icon" className="text-sm" title="Sign out" onClick={logout}>
+                <LogOut className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ export default function CompanyInfo({ data, onChange }) {
           <img src={data.company_logo_url} alt="Logo" className="w-16 h-16 object-contain rounded-lg border border-slate-200" />
         ) : (
           <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b15319d48f2711d4d14365/e700388e1_cropped-logo-1.png" alt="Blockcube" className="w-14 h-14 object-contain rounded-xl" />
+            <Building2 className="w-8 h-8 text-blue-300" />
           </div>
         )}
         <div>

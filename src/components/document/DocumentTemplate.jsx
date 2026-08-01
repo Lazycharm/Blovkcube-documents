@@ -1,9 +1,6 @@
 import React from "react";
 import { format } from "date-fns";
 import { Building2 } from "lucide-react";
-import logoImg from "@/images/logo.png";
-import stampImg from "@/images/stamp.png";
-import signatureImg from "@/images/signature.png";
 
 export default function DocumentTemplate({ doc }) {
   const sym = { AED: "AED ", USD: "$", EUR: "€", GBP: "£", ZAR: "R", NGN: "₦", KES: "KSh", INR: "₹" }[doc.currency] || doc.currency + " ";
@@ -37,9 +34,15 @@ export default function DocumentTemplate({ doc }) {
         {/* Top section */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6 print:gap-2 print:mb-2">
           <div className="flex items-start gap-3 print:gap-2">
-            <img src={logoImg} alt="Logo" className="w-14 h-14 print:w-10 print:h-10 object-contain rounded-xl" />
+            {doc.company_logo_url ? (
+              <img src={doc.company_logo_url} alt="Logo" className="w-14 h-14 print:w-10 print:h-10 object-contain rounded-xl" />
+            ) : (
+              <div className="w-14 h-14 print:w-10 print:h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                <Building2 className="w-7 h-7 print:w-5 print:h-5 text-blue-300" />
+              </div>
+            )}
             <div>
-              <h2 className="text-xl font-bold text-slate-900 print:text-base print:leading-tight">{doc.company_name || "Blockcube"}</h2>
+              <h2 className="text-xl font-bold text-slate-900 print:text-base print:leading-tight">{doc.company_name || "Your Company"}</h2>
               {doc.company_address && <p className="text-xs text-slate-500 mt-0.5 print:text-[10px] print:leading-snug">{doc.company_address}</p>}
               {doc.company_phone && <p className="text-xs text-slate-500 print:text-[10px] print:leading-snug">{doc.company_phone}</p>}
               {doc.company_email && <p className="text-xs text-slate-500 print:text-[10px] print:leading-snug">{doc.company_email}</p>}
@@ -186,30 +189,18 @@ export default function DocumentTemplate({ doc }) {
           </div>
         </div>
 
-        {/* Bank Details & Stamp — keep together on print (avoid page break inside) */}
-        <div
-          className="document-print-footer grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2 pt-4 border-t border-slate-100 print:border-slate-200 print:mt-0 print:pt-2 print:gap-3"
-          style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
-        >
-          {doc.bank_details && (
+        {/* Bank Details — keep together on print (avoid page break inside) */}
+        {doc.bank_details && (
+          <div
+            className="document-print-footer text-sm mt-2 pt-4 border-t border-slate-100 print:border-slate-200 print:mt-0 print:pt-2"
+            style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
+          >
             <div className="min-w-0" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Bank Details</p>
               <p className="text-slate-600 whitespace-pre-wrap text-xs leading-relaxed print:text-[10px] print:leading-snug">{doc.bank_details}</p>
             </div>
-          )}
-
-          {/* Stamp & Signature — single unbreakable cluster */}
-          <div className="flex flex-col items-end justify-end min-w-0">
-            <div
-              className="text-center document-signature-cluster"
-              style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
-            >
-              <img src={stampImg} alt="Stamp" className="w-32 h-32 object-contain mx-auto mb-1 print:w-24 print:h-24 print:mb-0" />
-              <img src={signatureImg} alt="Signature" className="w-28 h-12 object-contain mx-auto mb-1 print:w-24 print:h-10 print:mb-0" />
-              <p className="text-xs text-slate-400 print:whitespace-nowrap">Authorized Signature</p>
-            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

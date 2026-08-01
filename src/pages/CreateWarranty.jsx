@@ -15,6 +15,7 @@ import { format, addMonths, addYears } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { exportHtmlToPdf } from "@/utils/pdfExport";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 
 import ClientSelector from "@/components/document/ClientSelector";
 import CompanyInfo from "@/components/document/CompanyInfo";
@@ -47,18 +48,36 @@ export default function CreateWarranty() {
     client_phone: "",
     client_email: "",
     client_trn: "",
-    company_name: "Blovk Cube Ts Est",
-    company_address: "Khaled building Hor Al Anz Office F1-457 | TRN 104745825000003",
-    company_phone: "+97156592122,+971543873531",
-    company_email: "blovkcubetsest@gmail.com",
-    company_website: "https://blovkcube.com/",
-    company_logo_url: "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69b15319d48f2711d4d14365/e700388e1_cropped-logo-1.png",
+    company_name: "",
+    company_address: "",
+    company_phone: "",
+    company_email: "",
+    company_website: "",
+    company_logo_url: "",
     terms: "",
     coverage: "",
     exclusions: "",
     stamp_url: "",
     signature_url: "",
   });
+
+  const { company } = useAuth();
+
+  // Only apply the tenant's saved company defaults to a brand-new warranty -
+  // an edit/duplicate load overwrites `warranty` right after with the real
+  // saved values, so this must never run for those.
+  useEffect(() => {
+    if (editId || duplicateId || !company) return;
+    setWarranty((prev) => ({
+      ...prev,
+      company_name: company.name || "",
+      company_address: company.address || "",
+      company_phone: company.phone || "",
+      company_email: company.email || "",
+      company_website: company.website || "",
+      company_logo_url: company.logo_url || "",
+    }));
+  }, [company, editId, duplicateId]);
 
   useEffect(() => {
     const loadId = editId || duplicateId;

@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { exportHtmlToPdf } from "@/utils/pdfExport";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 
 import ItemTable from "@/components/document/ItemTable";
 import ClientSelector from "@/components/document/ClientSelector";
@@ -79,14 +80,33 @@ export default function CreateDocument() {
     items: [{ description: "", image_url: "", image_url_2: "", image_url_3: "", quantity: 1, unit_price: 0, tax_percent: 0, total: 0 }],
     notes: "",
     payment_terms: "",
-    bank_details: "Emirates Islamic Bank\nBlovk Cube Techical Services Est\nACCOUNT NUMBER 3708487685601AED\nIBAN AE250340003708487685601\n\nMashreq Bank\nBlovk Cube Techical Services Est\nACCOUNT NUMBER 019101565155\nIBAN AE080330000019101565155",
-    company_name: "Blovk Cube Ts Est",
-    company_address: "Khaled building Hor Al Anz Office F1-457 | TRN 104745825000003",
-    company_phone: "+97156592122,+971543873531",
-    company_email: "blovkcubetsest@gmail.com",
-    company_website: "https://blovkcube.com/",
+    bank_details: "",
+    company_name: "",
+    company_address: "",
+    company_phone: "",
+    company_email: "",
+    company_website: "",
     company_logo_url: "",
   });
+
+  const { company } = useAuth();
+
+  // Only apply the tenant's saved company defaults to a brand-new document -
+  // an edit/duplicate load overwrites `doc` right after with the real saved
+  // values, so this must never run for those.
+  useEffect(() => {
+    if (editId || duplicateId || !company) return;
+    setDoc((prev) => ({
+      ...prev,
+      company_name: company.name || "",
+      company_address: company.address || "",
+      company_phone: company.phone || "",
+      company_email: company.email || "",
+      company_website: company.website || "",
+      company_logo_url: company.logo_url || "",
+      bank_details: company.bank_details || "",
+    }));
+  }, [company, editId, duplicateId]);
 
   useEffect(() => {
     const loadId = editId || duplicateId;
