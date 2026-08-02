@@ -10,7 +10,7 @@ export default function Terms() {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl("Dashboard")}>
-            <Button variant="outline" size="icon" className="rounded-xl">
+            <Button variant="outline" size="icon" className="rounded-xl" aria-label="Back to Dashboard">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>

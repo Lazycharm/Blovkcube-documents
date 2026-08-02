@@ -65,7 +65,7 @@ export default function DocumentPreview() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl("DocumentHistory")}>
-              <Button variant="ghost" size="icon" className="text-slate-500">
+              <Button variant="ghost" size="icon" className="text-slate-500" aria-label="Back to Document History">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>

@@ -85,7 +85,7 @@ export default function CompanySettings() {
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex items-center gap-3">
           <Link to={createPageUrl("Dashboard")}>
-            <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Back to Dashboard"><ArrowLeft className="w-4 h-4" /></Button>
           </Link>
           <h1 className="text-xl font-bold text-slate-900">Company Settings</h1>
         </div>

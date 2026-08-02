@@ -44,7 +44,7 @@ export default function Subscribe() {
       <div className="max-w-md mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl("CompanySettings")}>
-            <Button variant="outline" size="icon" className="rounded-xl">
+            <Button variant="outline" size="icon" className="rounded-xl" aria-label="Back to Company Settings">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>

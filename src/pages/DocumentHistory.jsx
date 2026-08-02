@@ -67,7 +67,7 @@ export default function DocumentHistory() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl("Dashboard")}>
-              <Button variant="ghost" size="icon" className="text-slate-500">
+              <Button variant="ghost" size="icon" className="text-slate-500" aria-label="Back to Dashboard">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
@@ -175,7 +175,7 @@ export default function DocumentHistory() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" aria-label="More actions">
                                 <MoreHorizontal className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
