@@ -1,8 +1,18 @@
-// Real Ziina webhook handler. Only a signed request from Ziina's real IP
-// range can ever activate a subscription.
+// Real Ziina webhook handler. Only a correctly-signed request can ever
+// activate a subscription — the HMAC signature (verified below) is the
+// real security boundary.
 // Deploy with: supabase functions deploy ziina-webhook --no-verify-jwt
 // (webhooks aren't authenticated with a user JWT — the signature IS the auth)
-
+//
+// 2026-08-02: this account's single Ziina webhook is registered against
+// CareerPilot's URL (Ziina allows only one URL per account), which
+// forwards the untouched raw body + signature here. A real forward
+// legitimately arrives from Vercel's egress IP, not one of Ziina's 4
+// direct-delivery IPs — so the IP allowlist can no longer be a hard gate
+// without breaking that forward. Signature verification alone is
+// cryptographically sufficient (only Ziina and the systems holding the
+// shared secret can produce a valid one); IP is logged for visibility
+// only, not enforced.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { verifyZiinaSignature, isZiinaWebhookIP } from '../_shared/ziina.ts';
 
@@ -13,8 +23,7 @@ Deno.serve(async (req) => {
 
   const sourceIp = req.headers.get('cf-connecting-ip') ?? req.headers.get('x-real-ip');
   if (!isZiinaWebhookIP(sourceIp)) {
-    console.error('Rejected webhook from non-Ziina IP:', sourceIp);
-    return new Response('Forbidden', { status: 403 });
+    console.warn('Webhook from non-Ziina-direct IP (expected if forwarded via the CareerPilot hub):', sourceIp);
   }
 
   const rawBody = await req.text();
