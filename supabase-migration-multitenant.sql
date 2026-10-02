@@ -40,31 +40,52 @@ create table if not exists public.company_members (
 
 alter table public.company_members enable row level security;
 
+-- Helpers used by the company_members policies below, defined here (before
+-- those policies) rather than further down with the rest of the tenant
+-- helpers, because CREATE POLICY resolves function references at creation
+-- time. NOTE: a policy on company_members must not subquery company_members
+-- directly — that re-triggers this same policy on the subquery and causes
+-- "infinite recursion detected in policy for relation company_members".
+-- Route the lookup through a security-definer function instead, which
+-- (owned by the migration role, same owner as the table) bypasses RLS
+-- internally and breaks the recursion.
+create or replace function public.current_company_id()
+returns uuid
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select company_id from public.company_members where user_id = auth.uid() limit 1;
+$$;
+
+grant execute on function public.current_company_id() to authenticated;
+
+create or replace function public.is_company_owner(p_company_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.company_members
+    where company_id = p_company_id and user_id = auth.uid() and role = 'owner'
+  );
+$$;
+
+grant execute on function public.is_company_owner(uuid) to authenticated;
+
 -- A member can see the roster of their own company; nothing else.
 create policy "Members read their own company roster"
   on public.company_members for select
-  using (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = company_members.company_id and cm.user_id = auth.uid()
-    )
-  );
+  using (company_id = public.current_company_id());
 
 -- Only owners can add/remove members.
 create policy "Owners manage their company roster"
   on public.company_members for all
-  using (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = company_members.company_id and cm.user_id = auth.uid() and cm.role = 'owner'
-    )
-  )
-  with check (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = company_members.company_id and cm.user_id = auth.uid() and cm.role = 'owner'
-    )
-  );
+  using (public.is_company_owner(company_id))
+  with check (public.is_company_owner(company_id));
 
 -- Companies: any member can read their own company's real settings; only
 -- owners can update them.
@@ -125,22 +146,13 @@ $$;
 revoke all on function public.create_company_and_join(text, text) from public;
 grant execute on function public.create_company_and_join(text, text) to authenticated;
 
--- 3b. Helper: the calling user's company (this app is one-company-per-user
--- for v1 — no user belongs to two companies — so "first match" is exact,
--- not a guess). Used as a column DEFAULT below so every existing
--- create-a-document/client/warranty call site auto-scopes to the right
--- tenant without having to thread company_id through each one by hand.
-create or replace function public.current_company_id()
-returns uuid
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select company_id from public.company_members where user_id = auth.uid() limit 1;
-$$;
-
-grant execute on function public.current_company_id() to authenticated;
+-- 3b. current_company_id() is defined earlier (right after the
+-- company_members table, section 2) since the company_members policies
+-- need it at creation time. It's also used below as a column DEFAULT so
+-- every existing create-a-document/client/warranty call site auto-scopes
+-- to the right tenant without having to thread company_id through each one
+-- by hand (this app is one-company-per-user for v1, so "first match" via
+-- that function is exact, not a guess).
 
 -- 4. SCOPE CLIENTS / DOCUMENTS / WARRANTIES TO A TENANT
 alter table public.clients add column if not exists company_id uuid references public.companies(id) on delete cascade default public.current_company_id();
